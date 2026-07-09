@@ -1,0 +1,138 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+}
+
+.header {
+  padding: var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.back {
+  font-size: var(--text-sm);
+  color: var(--color-muted-fg);
+  transition: color var(--ease-default);
+}
+
+.back:hover {
+  color: var(--color-jade);
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-8);
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.entry {
+  padding: var(--space-6);
+  background: var(--color-muted);
+  border-radius: var(--radius-lg);
+}
+
+.entryText {
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  color: var(--color-fg);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+.reflectButton {
+  align-self: flex-start;
+  padding: var(--space-3) var(--space-6);
+  background: transparent;
+  color: var(--color-jade);
+  border: 1px solid var(--color-jade);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: all var(--ease-default);
+}
+
+.reflectButton:hover {
+  background: var(--color-jade);
+  color: #ffffff;
+}
+
+.thinking {
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  color: var(--color-muted-fg);
+  font-style: italic;
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: #c0392b;
+  background: #fdf0ef;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+}
+
+.reflectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.reflectionText {
+  font-family: var(--font-serif);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  color: var(--color-fg);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.responseRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.resonates {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-jade-light);
+  color: var(--color-jade-dark);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  transition: all var(--ease-default);
+}
+
+.resonates:hover {
+  background: var(--color-jade);
+  color: #ffffff;
+}
+
+.missed {
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  color: var(--color-muted-fg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  transition: all var(--ease-default);
+}
+
+.missed:hover {
+  border-color: var(--color-muted-fg);
+}
+
+.thanks {
+  font-size: var(--text-sm);
+  color: var(--color-muted-fg);
+  font-style: italic;
+}
