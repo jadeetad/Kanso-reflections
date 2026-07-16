@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { trpc } from "@/app/providers";
 
 type Theme = "light" | "dark";
 
@@ -12,21 +11,20 @@ const ThemeContext = createContext<{
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
-  const { data: profile } = trpc.profile.get.useQuery();
-  const upsertProfile = trpc.profile.upsert.useMutation();
 
   useEffect(() => {
-    if (profile?.theme) {
-      setTheme(profile.theme as Theme);
-      document.documentElement.setAttribute("data-theme", profile.theme);
+    const saved = localStorage.getItem("kanso-theme") as Theme | null;
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.setAttribute("data-theme", saved);
     }
-  }, [profile]);
+  }, []);
 
   function toggle() {
     const next = theme === "light" ? "dark" : "light";
     setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
-    upsertProfile.mutate({ theme: next });
+    localStorage.setItem("kanso-theme", next);
   }
 
   return (

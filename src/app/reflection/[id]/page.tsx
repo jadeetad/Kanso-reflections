@@ -1,152 +1,131 @@
 "use client";
 
-import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { trpc } from "@/app/providers";
-import styles from "./reflection.module.css";
+import { useSession, signOut } from "@/lib/auth-client";
+import { useTheme } from "@/lib/theme";
+import { getRandomPrompt, WRITING_PROMPTS } from "@/lib/prompts";
+import styles from "./home.module.css";
 
-export default function ReflectionPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+const MORE_PROMPTS = [
+  "What are you not saying?",
+  "What did today ask of you?",
+  "What are you carrying that isn't yours?",
+  "What would you tell yourself from a year ago?",
+  "What are you pretending not to know?",
+];
+
+export default function HomePage() {
   const router = useRouter();
-  const [responded, setResponded] = useState(false);
-  const [streaming, setStreaming] = useState(false);
-  const [streamedText, setStreamedText] = useState("");
-
+  const { data: session } = useSession();
   const { data: entries } = trpc.entries.list.useQuery();
-  const currentEntry = entries?.find(e => e.id === id);
+  const { theme, toggle } = useTheme();
+  const [prompt, setPrompt] = useState<string | null>(null);
 
-  const { data: reflections, refetch } = trpc.reflections.getByEntry.useQuery(
-    { entryId: id },
-    { enabled: !!id }
-  );
+  useEffect(() => {
+    setPrompt(getRandomPrompt());
+  }, []);
 
-  const respondToReflection = trpc.reflections.respond.useMutation();
-  const reflection = reflections?.[0];
+  const firstName = session?.user?.name?.split(" ")[0] ?? "there";
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  async function handleGenerate() {
-  if (!currentEntry) return;
-  setStreaming(true);
-  setStreamedText("");
-
-  try {
-    const res = await fetch("/api/reflect", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entryId: id, entryText: currentEntry.text }),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      setStreamedText(text === "Rate limit exceeded"
-        ? "You've reached your daily reflection limit. Come back tomorrow."
-        : "Something went wrong. Please try again.");
-      setStreaming(false);
-      return;
-    }
-
-    const reader = res.body?.getReader();
-    const decoder = new TextDecoder();
-    if (!reader) return;
-
-    let fullText = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      fullText += decoder.decode(value, { stream: true });
-    }
-
-    setStreamedText(fullText);
-    refetch();
-  } catch (e) {
-    console.error(e);
-    setStreamedText("Something went wrong. Please try again.");
-  } finally {
-    setStreaming(false);
+  async function handleSignOut() {
+    await signOut();
+    router.push("/");
   }
-}
-
-  async function handleRespond(response: "resonates" | "missed") {
-    if (!reflection) return;
-    await respondToReflection.mutateAsync({ id: reflection.id, response });
-    setResponded(true);
-  }
-
-  const displayText = streamedText || reflection?.text || "";
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <button className={styles.back} onClick={() => router.push("/home")}>
-          ← Home
-        </button>
+        <span className={styles.logo}>Kansō</span>
+        <div className={styles.headerActions}>
+          <button
+            className={`${styles.themeToggle} glass-button`}
+            onClick={toggle}
+          >
+            {theme === "light" ? "dark" : "light"}
+          </button>
+          <button className={styles.archive} onClick={() => router.push("/archive")}>
+            library
+          </button>
+          <button className={styles.signOut} onClick={handleSignOut}>
+            sign out
+          </button>
+        </div>
       </header>
 
       <main className={styles.main}>
-        {currentEntry && (
-          <motion.div
-            className={styles.entry}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className={styles.entryText}>{currentEntry.text}</p>
-          </motion.div>
-        )}
+        <motion.div
+          className={styles.hero}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className={styles.greeting}>{greeting}, {firstName}.</p>
+          {prompt && <h2 className={styles.prompt}>{prompt}</h2>}
+          <p className={styles.promptLabel}>today's prompt</p>
+        </motion.div>
 
-        <div className={styles.divider} />
-
-        {!displayText && !streaming && (
+        {prompt && (
           <motion.button
-            className={styles.reflectButton}
-            onClick={handleGenerate}
+            className={`${styles.writeButton} glass-button`}
+            onClick={() => router.push(`/write?prompt=${encodeURIComponent(prompt)}`)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Request a reflection
+            open the page
           </motion.button>
         )}
 
-        {streaming && !streamedText && (
-          <motion.p
-            className={styles.thinking}
+        <motion.div
+          className={styles.promptCarousel}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+        >
+          <p className={styles.carouselLabel}>for you</p>
+          <div className={styles.carouselTrack}>
+            {MORE_PROMPTS.map((p) => (
+              <button
+                key={p}
+                className={styles.carouselChip}
+                onClick={() => router.push(`/write?prompt=${encodeURIComponent(p)}`)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {entries && entries.length > 0 && (
+          <motion.div
+            className={styles.recent}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
           >
-            Sitting with your words...
-          </motion.p>
-        )}
-
-        {displayText && (
-          <motion.div
-            className={styles.reflectionBlock}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <p className={styles.reflectionText}>{displayText}</p>
-
-            {!streaming && !responded && !reflection?.reviewed && reflection && (
-              <div className={styles.responseRow}>
-                <button
-                  className={styles.resonates}
-                  onClick={() => handleRespond("resonates")}
-                >
-                  This resonates
-                </button>
-                <button
-                  className={styles.missed}
-                  onClick={() => handleRespond("missed")}
-                >
-                  Missed the mark
-                </button>
+            <p className={styles.recentLabel}>recent</p>
+            {entries.slice(0, 3).map(entry => (
+              <div
+                key={entry.id}
+                className={styles.entryRow}
+                onClick={() => router.push(`/reflection/${entry.id}`)}
+              >
+                <p className={styles.entryText}>{entry.text.slice(0, 100)}...</p>
+                <p className={styles.entryDate}>
+                  {new Date(entry.createdAt!).toLocaleDateString("en-GB", {
+                    day: "numeric", month: "short",
+                  })}
+                </p>
               </div>
-            )}
-
-            {(responded || reflection?.reviewed) && (
-              <p className={styles.thanks}>Thank you for the feedback.</p>
-            )}
+            ))}
           </motion.div>
         )}
       </main>

@@ -5,7 +5,7 @@ import "@/styles/globals.css";
 
 const lora = Lora({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-lora",
   display: "swap",
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
@@ -13,14 +13,14 @@ const lora = Lora({
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-inter",
   display: "swap",
   weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Kansō",
-  description: "Reflections",
+  title: "Kanso",
+  description: "A quiet place to write.",
 };
 
 export default function RootLayout({
