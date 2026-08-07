@@ -7,7 +7,8 @@ import ReactMarkdown from "react-markdown";
 import { trpc } from "@/app/providers";
 import styles from "./reflection.module.css";
 
-export default function ReflectionPage({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params);
+export default function ReflectionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [responded, setResponded] = useState(false);
   const [streaming, setStreaming] = useState(false);
