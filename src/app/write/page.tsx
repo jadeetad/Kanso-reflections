@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { trpc } from "@/app/providers";
 import styles from "./write.module.css";
+import { Suspense } from "react";
 
-export default function WritePage() {
+function WritePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prompt = searchParams.get("prompt") ?? "";
@@ -150,5 +151,12 @@ const startTime = useRef(Date.now());
         </motion.button>
       </footer>
     </div>
+  );
+}
+export default function WritePageWrapper() {
+  return (
+    <Suspense fallback={<div />}>
+      <WritePage />
+    </Suspense>
   );
 }
