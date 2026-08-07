@@ -1,99 +1,37 @@
-"use client";
+﻿"use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { trpc } from "@/app/providers";
-import styles from "./write.module.css";
+import styles from "./page.module.css";
 
-type InputMode = "keyboard" | "pen" | "voice";
-
-export default function WritePage() {
+export default function SplashPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const prompt = searchParams.get("prompt") ?? "";
-  const [text, setText] = useState("");
-  const [saved, setSaved] = useState(false);
-  const [inputMode, setInputMode] = useState<InputMode>("keyboard");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const startTime = useRef(Date.now());
-  const createEntry = trpc.entries.create.useMutation();
-
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
-
-  const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
-
-  async function handleSave() {
-    if (text.trim().length < 10) return;
-    const entry = await createEntry.mutateAsync({
-      text,
-      wordCount,
-      lineCount: text.split("\n").length,
-      durationMs: Date.now() - startTime.current,
-      inputMode,
-      prompt: prompt || undefined,
-    });
-    setSaved(true);
-    setTimeout(() => router.push(`/reflection/${entry.id}`), 600);
-  }
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <button className={styles.back} onClick={() => router.push("/home")}>
-          ←
-        </button>
-        {prompt && <p className={styles.prompt}>{prompt}</p>}
-        <span className={styles.wordCount}>{wordCount} words</span>
-      </header>
-
-      <main className={styles.main}>
-        <textarea
-          ref={textareaRef}
-          className={styles.textarea}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Begin anywhere."
-          spellCheck={false}
-        />
-      </main>
-
-      <footer className={styles.footer}>
-        <div className={styles.modeRow}>
+      <motion.div
+        className={styles.content}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <h1 className={styles.title}>Kanso</h1>
+        <p className={styles.tagline}>A quiet place to write.</p>
+        <div className={styles.actions}>
           <button
-            className={`${styles.modeBtn} ${inputMode === "keyboard" ? styles.modeActive : ""}`}
-            onClick={() => setInputMode("keyboard")}
-            title="Keyboard"
+            className={`${styles.primary} glass-button`}
+            onClick={() => router.push("/sign-up")}
           >
-            ⌨
+            Begin
           </button>
           <button
-            className={`${styles.modeBtn} ${inputMode === "pen" ? styles.modeActive : ""}`}
-            onClick={() => setInputMode("pen")}
-            title="Pen"
+            className={styles.secondary}
+            onClick={() => router.push("/sign-in")}
           >
-            ✒
-          </button>
-          <button
-            className={`${styles.modeBtn} ${inputMode === "voice" ? styles.modeActive : ""}`}
-            onClick={() => setInputMode("voice")}
-            title="Voice"
-          >
-            ◎
+            Sign in
           </button>
         </div>
-        <motion.button
-          className={`${styles.save} glass-button`}
-          onClick={handleSave}
-          disabled={text.trim().length < 10 || createEntry.isPending || saved}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {saved ? "Saved" : createEntry.isPending ? "Saving..." : "End session"}
-        </motion.button>
-      </footer>
+      </motion.div>
     </div>
   );
 }
