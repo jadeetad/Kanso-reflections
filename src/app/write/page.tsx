@@ -7,6 +7,8 @@ import { trpc } from "@/app/providers";
 import styles from "./write.module.css";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 function WritePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
