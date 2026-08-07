@@ -7,18 +7,16 @@ import ReactMarkdown from "react-markdown";
 import { trpc } from "@/app/providers";
 import styles from "./reflection.module.css";
 
-export default function ReflectionPage({ params }) {
-  const { id } = use(params);
+export default function ReflectionPage({ params }: { params: Promise<{ id: string }> }) {  const { id } = use(params);
   const router = useRouter();
   const [responded, setResponded] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [streamedText, setStreamedText] = useState("");
-  const [editText, setEditText] = useState(null);
+  const [editText, setEditText] = useState<string | null>(null);
 
-  const { data: entries } = trpc.entries.list.useQuery();
-  const currentEntry = entries?.find(function(e) { return e.id === id; });
-
-  const { data: reflections, refetch } = trpc.reflections.getByEntry.useQuery(
+const { data: entries } = trpc.entries.list.useQuery();
+const currentEntry = entries?.find((e) => e.id === id);
+const { data: reflections, refetch } = trpc.reflections.getByEntry.useQuery(
     { entryId: id },
     { enabled: !!id }
   );
@@ -89,7 +87,7 @@ export default function ReflectionPage({ params }) {
     }
   }
 
-  async function handleRespond(response) {
+  async function handleRespond(response: "resonates" | "missed") {
     if (!reflection) return;
     await respondToReflection.mutateAsync({ id: reflection.id, response });
     setResponded(true);
